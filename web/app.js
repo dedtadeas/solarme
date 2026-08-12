@@ -53,6 +53,7 @@ const I18N = {
     note2: "Model povrchu: lidar ČÚZK — obsahuje stavby dokončené nejméně do roku 2022 (ověřeno na budovách z let 2018 a 2022). Novější mohou chybět.",
     skip: "Přeskočit", next: "Další", done: "Rozumím",
     source: "Zdrojový kód", support: "Podpořit", controlsBtn: "Nastavení mapy",
+    coverageNote: "Rámečky ukazují, kde je metrová analýza spočítaná. Přibližte se do některého z nich. Čárkované se právě počítají.",
     gateSupport: "Praha je hotová. Aby mapa pokryla celou republiku, zbývá spočítat 157 dlaždic 26 × 26 km.",
     gateSupportLink: "Zaplatit další dlaždici",
     missing: "chybí soubor {file} — vytvořte ho příkazem `make demo`.",
@@ -90,6 +91,7 @@ const I18N = {
     note2: "Surface model: ČÚZK national lidar — includes construction through at least 2022 (checked against buildings finished in 2018 and 2022). Anything newer may be missing.",
     skip: "Skip", next: "Next", done: "Got it",
     source: "Source", support: "Support", controlsBtn: "Map settings",
+    coverageNote: "Outlines show where the 1 m analysis exists. Zoom into one. Dashed outlines are still building.",
     gateSupport: "Prague is done. Covering the whole country means computing 157 more tiles of 26 × 26 km.",
     gateSupportLink: "Pay for the next tile",
     missing: "{file} is missing — run `make demo` to build it.",
@@ -242,6 +244,44 @@ map.addControl(
 map.addControl(new maplibregl.ScaleControl({ maxWidth: 110, unit: "metric" }));
 
 map.on("load", async () => {
+  /* ── coverage footprints ────────────────────────────────────────────────
+   * The archives only carry z12 and up, so zooming out to see the country
+   * gives an empty map with no hint that data exists anywhere. These
+   * footprints answer "where has this been computed?" and fade out at z12.5,
+   * exactly where the real rasters take over. Added first so every raster
+   * layer sits above them.
+   */
+  map.addSource("coverage", { type: "geojson", data: "./coverage.geojson" });
+  const fade = (from, to) => ["interpolate", ["linear"], ["zoom"], 10.5, from, 12.5, to];
+  map.addLayer({
+    id: "coverage-fill",
+    type: "fill",
+    source: "coverage",
+    filter: ["==", ["get", "status"], "live"],
+    paint: { "fill-color": "#f0a04b", "fill-opacity": fade(0.13, 0) },
+  });
+  // Two line layers, not one: line-dasharray cannot be driven by a property,
+  // so "computed" and "still building" need separate layers to differ.
+  map.addLayer({
+    id: "coverage-line",
+    type: "line",
+    source: "coverage",
+    filter: ["==", ["get", "status"], "live"],
+    paint: { "line-color": "#f0a04b", "line-width": 1.2, "line-opacity": fade(0.8, 0) },
+  });
+  map.addLayer({
+    id: "coverage-line-soon",
+    type: "line",
+    source: "coverage",
+    filter: ["!=", ["get", "status"], "live"],
+    paint: {
+      "line-color": "#f0a04b",
+      "line-width": 1,
+      "line-dasharray": [2, 2],
+      "line-opacity": fade(0.45, 0),
+    },
+  });
+
   for (const region of REGIONS) {
     map.addSource(`visibility-${region.id}`, {
       type: "raster",
