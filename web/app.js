@@ -16,6 +16,7 @@
 const TILE_BASE = window.TILE_BASE || "./";
 const REGIONS = [
   { id: "blansko", url: "blansko.pmtiles", maxUrl: "blansko_max.pmtiles" },
+  { id: "breclav", url: "breclav.pmtiles", maxUrl: "breclav_max.pmtiles" },
   { id: "brno", url: "brno.pmtiles", maxUrl: "brno_max.pmtiles" },
   { id: "brno-jih", url: "brno-jih.pmtiles", maxUrl: "brno-jih_max.pmtiles" },
   { id: "ceska-lipa", url: "ceska-lipa.pmtiles", maxUrl: "ceska-lipa_max.pmtiles" },
@@ -32,6 +33,7 @@ const REGIONS = [
   { id: "jablonec", url: "jablonec.pmtiles", maxUrl: "jablonec_max.pmtiles" },
   { id: "jihlava", url: "jihlava.pmtiles", maxUrl: "jihlava_max.pmtiles" },
   { id: "karlovy-vary", url: "karlovy-vary.pmtiles", maxUrl: "karlovy-vary_max.pmtiles" },
+  { id: "klatovy", url: "klatovy.pmtiles", maxUrl: "klatovy_max.pmtiles" },
   { id: "kolin", url: "kolin.pmtiles", maxUrl: "kolin_max.pmtiles" },
   { id: "liberec", url: "liberec.pmtiles", maxUrl: "liberec_max.pmtiles" },
   { id: "mlada-boleslav", url: "mlada-boleslav.pmtiles", maxUrl: "mlada-boleslav_max.pmtiles" },
