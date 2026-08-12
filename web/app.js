@@ -15,6 +15,7 @@
 // silently gets nothing.
 const TILE_BASE = window.TILE_BASE || "./";
 const REGIONS = [
+  { id: "bezdez", url: "bezdez.pmtiles", maxUrl: "bezdez_max.pmtiles" },
   { id: "blansko", url: "blansko.pmtiles", maxUrl: "blansko_max.pmtiles" },
   { id: "bojiste", url: "bojiste.pmtiles", maxUrl: "bojiste_max.pmtiles" },
   { id: "bosilec", url: "bosilec.pmtiles", maxUrl: "bosilec_max.pmtiles" },
@@ -66,6 +67,7 @@ const REGIONS = [
   { id: "northwest", url: "northwest.pmtiles", maxUrl: "northwest_max.pmtiles" },
   { id: "novy-prerov", url: "novy-prerov.pmtiles", maxUrl: "novy-prerov_max.pmtiles" },
   { id: "nymburk", url: "nymburk.pmtiles", maxUrl: "nymburk_max.pmtiles" },
+  { id: "obratan", url: "obratan.pmtiles", maxUrl: "obratan_max.pmtiles" },
   { id: "olomouc", url: "olomouc.pmtiles", maxUrl: "olomouc_max.pmtiles" },
   { id: "opava", url: "opava.pmtiles", maxUrl: "opava_max.pmtiles" },
   { id: "ostrava", url: "ostrava.pmtiles", maxUrl: "ostrava_max.pmtiles" },
@@ -78,11 +80,13 @@ const REGIONS = [
   { id: "prague", url: "visibility.pmtiles", maxUrl: "visibility_max.pmtiles" },
   { id: "prehysov", url: "prehysov.pmtiles", maxUrl: "prehysov_max.pmtiles" },
   { id: "prerov", url: "prerov.pmtiles", maxUrl: "prerov_max.pmtiles" },
+  { id: "preskace", url: "preskace.pmtiles", maxUrl: "preskace_max.pmtiles" },
   { id: "pribram", url: "pribram.pmtiles", maxUrl: "pribram_max.pmtiles" },
   { id: "prosetin", url: "prosetin.pmtiles", maxUrl: "prosetin_max.pmtiles" },
   { id: "prostejov", url: "prostejov.pmtiles", maxUrl: "prostejov_max.pmtiles" },
   { id: "rakovnik", url: "rakovnik.pmtiles", maxUrl: "rakovnik_max.pmtiles" },
   { id: "roznov", url: "roznov.pmtiles", maxUrl: "roznov_max.pmtiles" },
+  { id: "sazava", url: "sazava.pmtiles", maxUrl: "sazava_max.pmtiles" },
   { id: "slapanice", url: "slapanice.pmtiles", maxUrl: "slapanice_max.pmtiles" },
   { id: "sokolov", url: "sokolov.pmtiles", maxUrl: "sokolov_max.pmtiles" },
   { id: "sternberk", url: "sternberk.pmtiles", maxUrl: "sternberk_max.pmtiles" },
