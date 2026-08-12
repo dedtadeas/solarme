@@ -70,6 +70,7 @@ const REGIONS = [
   { id: "usti", url: "usti.pmtiles", maxUrl: "usti_max.pmtiles" },
   { id: "usti-orlici", url: "usti-orlici.pmtiles", maxUrl: "usti-orlici_max.pmtiles" },
   { id: "vsetin", url: "vsetin.pmtiles", maxUrl: "vsetin_max.pmtiles" },
+  { id: "vyskov", url: "vyskov.pmtiles", maxUrl: "vyskov_max.pmtiles" },
   { id: "west", url: "west.pmtiles", maxUrl: "west_max.pmtiles" },
   { id: "zlin", url: "zlin.pmtiles", maxUrl: "zlin_max.pmtiles" },
   { id: "znojmo", url: "znojmo.pmtiles", maxUrl: "znojmo_max.pmtiles" },
