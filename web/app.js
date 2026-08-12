@@ -91,6 +91,7 @@ const REGIONS = [
   { id: "sokolov", url: "sokolov.pmtiles", maxUrl: "sokolov_max.pmtiles" },
   { id: "sternberk", url: "sternberk.pmtiles", maxUrl: "sternberk_max.pmtiles" },
   { id: "strakonice", url: "strakonice.pmtiles", maxUrl: "strakonice_max.pmtiles" },
+  { id: "stribrna", url: "stribrna.pmtiles", maxUrl: "stribrna_max.pmtiles" },
   { id: "suchov", url: "suchov.pmtiles", maxUrl: "suchov_max.pmtiles" },
   { id: "sumperk", url: "sumperk.pmtiles", maxUrl: "sumperk_max.pmtiles" },
   { id: "svitavy", url: "svitavy.pmtiles", maxUrl: "svitavy_max.pmtiles" },
