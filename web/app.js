@@ -52,6 +52,8 @@ const REGIONS = [
   { id: "pribram", url: "pribram.pmtiles", maxUrl: "pribram_max.pmtiles" },
   { id: "prostejov", url: "prostejov.pmtiles", maxUrl: "prostejov_max.pmtiles" },
   { id: "slapanice", url: "slapanice.pmtiles", maxUrl: "slapanice_max.pmtiles" },
+  { id: "sokolov", url: "sokolov.pmtiles", maxUrl: "sokolov_max.pmtiles" },
+  { id: "strakonice", url: "strakonice.pmtiles", maxUrl: "strakonice_max.pmtiles" },
   { id: "sumperk", url: "sumperk.pmtiles", maxUrl: "sumperk_max.pmtiles" },
   { id: "tabor", url: "tabor.pmtiles", maxUrl: "tabor_max.pmtiles" },
   { id: "teplice", url: "teplice.pmtiles", maxUrl: "teplice_max.pmtiles" },
