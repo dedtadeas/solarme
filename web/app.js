@@ -27,6 +27,7 @@ const REGIONS = [
   { id: "northwest", url: "northwest.pmtiles", maxUrl: "northwest_max.pmtiles" },
   { id: "olomouc", url: "olomouc.pmtiles", maxUrl: "olomouc_max.pmtiles" },
   { id: "opava", url: "opava.pmtiles", maxUrl: "opava_max.pmtiles" },
+  { id: "ostrava", url: "ostrava.pmtiles", maxUrl: "ostrava_max.pmtiles" },
   { id: "pardubice", url: "pardubice.pmtiles", maxUrl: "pardubice_max.pmtiles" },
   { id: "plzen", url: "plzen.pmtiles", maxUrl: "plzen_max.pmtiles" },
   { id: "prague", url: "visibility.pmtiles", maxUrl: "visibility_max.pmtiles" },
