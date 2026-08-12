@@ -37,6 +37,7 @@ const REGIONS = [
   { id: "pardubice", url: "pardubice.pmtiles", maxUrl: "pardubice_max.pmtiles" },
   { id: "plzen", url: "plzen.pmtiles", maxUrl: "plzen_max.pmtiles" },
   { id: "prague", url: "visibility.pmtiles", maxUrl: "visibility_max.pmtiles" },
+  { id: "slapanice", url: "slapanice.pmtiles", maxUrl: "slapanice_max.pmtiles" },
   { id: "usti", url: "usti.pmtiles", maxUrl: "usti_max.pmtiles" },
   { id: "west", url: "west.pmtiles", maxUrl: "west_max.pmtiles" },
   { id: "zlin", url: "zlin.pmtiles", maxUrl: "zlin_max.pmtiles" },
