@@ -1,0 +1,212 @@
+# SunLine — configuration
+#
+# Everything scenario-specific lives here. The eclipse is just one time window;
+# point `sun.window` at any sunrise/sunset and the pipeline answers the same
+# question for that moment instead.
+
+project:
+  name: "SunLine — Prague, 12 Aug 2026 eclipse"
+  slug: prague-eclipse-2026
+
+# ---------------------------------------------------------------------------
+# Area of interest
+# ---------------------------------------------------------------------------
+# S-JTSK / Krovak East North (EPSG:5514). Coordinates over Czechia are NEGATIVE
+# in this CRS; Czech practice quotes them positive and axis-swapped (Y,X), so
+# always cross-check against the service extent before editing:
+#   x: -905000 .. -430000   y: -1228000 .. -934000
+#
+# Current box: 26 x 26 km centred on Prague (-740000, -1046000). Covers the
+# dense core and inner suburbs. Prague's full admin area needs 38 x 31 km —
+# widen here once the tiled sweep is proven against available RAM.
+aoi:
+  crs: "EPSG:5514"
+  xmin: -753000
+  ymin: -1059000
+  xmax: -727000
+  ymax: -1033000
+  resolution: 1.0          # metres per pixel for the near-field DSM
+
+  # Blockers outside the AOI still cast shadows into it, so the DSM is fetched
+  # with this margin and every sweep block reads its own halo of it.
+  #
+  # Sized so ordinary fabric is fully modelled at 1 m: a 40 m building at the
+  # 1 deg floor reaches 2292 m. Structures taller than tan(floor)*3000 = 52 m
+  # outrun this halo — their tails are carried by `sweep.coarse` below, and the
+  # rings take over past that. An earlier 1200 m buffer left a band that
+  # nothing covered: measured, up to 9.5 deg of missing horizon and 12% of
+  # locations wrong for at least one timestamp.
+  #
+  # 3 km is also the limit of the strict flat-earth budget in the fine sweep:
+  # curvature drop there is 0.61 m, i.e. 0.012 deg.
+  buffer_m: 3000
+
+# The fine sweep's halo caps blocker height at tan(floor) * buffer_m = 52 m.
+# Prague is full of things taller: Žižkov tower 216 m (shadow 12.4 km at 1 deg),
+# the Pankrác towers ~110 m (6+ km), church spires 60-100 m (3.4-5.7 km). Their
+# tails were being cut off at 3 km — observed on the map as shadows that just
+# stop. This coarse second pass sweeps a max-pooled DSM with a much deeper halo
+# and is ANDed with the fine result; shadow edges gain ~5 m of fuzz (0.09 m of
+# height at 1 deg) and long tails become real.
+sweep:
+  coarse:
+    res: 5.0               # metres; DSM is max-pooled so crests survive
+    halo_m: 13000          # covers a 227 m structure at the 1 deg floor
+    max_structure_m: 220   # tallest thing expected in/near the AOI (Žižkov 216)
+    # Flat-earth error at 13 km is 11.6 m of curvature drop = 0.05 deg, and it
+    # over-blocks (pessimistic), never under. Accepted; the rings beyond are
+    # curvature-aware.
+
+# ---------------------------------------------------------------------------
+# Data sources — CUZK ArcGIS ImageServer
+# ---------------------------------------------------------------------------
+# Discovered at https://ags.cuzk.gov.cz/arcgis/rest/services/3D
+# Both are Float32 elevation in EPSG:5514, exportImage-capable, whole-country.
+# This replaces the DMP 1G Atom/XYZ sheet download in the original brief:
+# ~2000 zipped text sheets (~300 GB) becomes a few dozen raster requests.
+sources:
+  surface:                 # DMP — buildings + vegetation. The blockers.
+    url: "https://ags.cuzk.gov.cz/arcgis/rest/services/3D/dmp/ImageServer"
+    native_res: 0.5
+  terrain:                 # DMR 5G — bare earth. Where the observer stands.
+    url: "https://ags.cuzk.gov.cz/arcgis/rest/services/3D/dmr5g/ImageServer"
+    native_res: 2.0
+
+  # Server-side per-request cap (from the service metadata). Requests are
+  # tiled to stay under it; keep tiles well below so a retry is cheap.
+  max_request_px: [15000, 4100]
+
+  # Published coverage of the services, EPSG:5514. Far-field rings are clamped
+  # to this so a ring overhanging the border only asks for what exists.
+  service_extent: [-905000, -1228000, -430000, -934000]
+  tile_px: [4000, 4000]
+  max_retries: 4
+  timeout_s: 180
+
+# Far-field horizon: hills 10-100 km away decide the answer at a low sun, and
+# the 1 m sweep only reaches `aoi.buffer_m`. Picks up exactly where that stops.
+far_field:
+  enabled: true
+  radius_km: 100
+
+  # Where the far-field ray march begins: exactly where the coarse sweep's
+  # halo ends. Marching from zero would double-count the same buildings and
+  # let a grid point on a valley floor report its own valley wall as the
+  # horizon — measured, that produced a bogus 26 deg horizon instead of 3 deg.
+  start_distance_m: 13000
+
+  # The horizon is solved on this grid and interpolated rather than ray-marched
+  # from all 676 M pixels. It must stay well below the ring start distance or
+  # one location's nearby hill smears onto its neighbour; at 3 km start, 1 km
+  # spacing gives a comfortable 3x margin.
+  grid_spacing_m: 1000
+
+  # Same ČÚZK DMP as the near field, requested progressively coarser with
+  # distance. Keeping one source means one vertical datum (Bpv) and one
+  # acquisition — no cross-dataset reconciliation anywhere in the chain.
+  #
+  # Sizing rule: a crest error of h at distance d costs atan(h/d) of horizon
+  # angle. Budget is 0.02 deg, far below both the 0.5 deg solar disc and the
+  # ~0.7 deg the sun drops between timestamps.
+  #
+  #   ring     h budget    request    max-pool to
+  #   3-15 km    1.0 m       5 m         15 m
+  #   15-40 km   2.6 m      10 m         30 m
+  #   40-100 km  7.0 m      25 m         75 m
+  #
+  # request_res_m is deliberately finer than march_step_m: the server resamples
+  # by *averaging*, which shaves ridge crests (measured p95 13 m, worst 36 m at
+  # 50 m requests). Fetching fine and max-pooling locally keeps the crest.
+  rings:
+    - { outer_km: 40,  request_res_m: 10, march_step_m: 30 }
+    - { outer_km: 100, request_res_m: 25, march_step_m: 75 }
+
+  # Measured against Copernicus GLO-30 on the same ground, this ring stack puts
+  # the far horizon at 3.35 deg where GLO-30 gave 3.24 deg — GLO-30 averages
+  # ridge crests away and lets the sun through where it should not.
+  #
+  # Rays that leave Czechia get no data and are treated as open horizon, with
+  # the affected fraction reported at build time. An AOI near the border would
+  # want a neighbouring national model, or GLO-30 as a coarse fill.
+
+# ---------------------------------------------------------------------------
+# Observer
+# ---------------------------------------------------------------------------
+# Eye height is measured from the TERRAIN, not the surface model. Standing
+# "on the DSM" would put the observer on top of the tree canopy and rooftops,
+# reporting a clear view for someone who is actually under a lime tree.
+observer:
+  eye_height_m: 1.6
+  ground: terrain          # terrain | surface
+
+  # Where the surface sits this far above the terrain, something is directly
+  # overhead — a roof, or a closed tree canopy — and there is no standing room
+  # at ground level. Those pixels are masked out rather than scored 0: a
+  # building footprint is not a place that "cannot see the eclipse", it is a
+  # place you cannot stand. Without this, roughly a third of the city reads as
+  # blocked street when it is simply indoors.
+  covered_threshold_m: 2.0
+
+# ---------------------------------------------------------------------------
+# Sun / time window
+# ---------------------------------------------------------------------------
+sun:
+  timezone: "Europe/Prague"
+  # Deep partial eclipse over Czechia on 2026-08-12, low in the WNW at sunset.
+  # Magnitude 0.885 (86.2% of the solar area) at maximum.
+  #
+  # These are the real contact times for Prague from JPL DE421, not a guess —
+  # run `sunline eclipse` to recompute, or `sunline sun`, which cross-checks the
+  # window below against them and complains if it misses the event.
+  #
+  #   first contact  19:19:30   sun  9.35 deg
+  #   maximum        20:11:45   sun  1.33 deg
+  #   sunset         20:20:30
+  #   last contact   21:01:45   sun -5.85 deg  <- below the horizon, never seen
+  #
+  # The window therefore runs first contact -> sunset. It previously started at
+  # 19:00, counting 20 minutes of ordinary sunshine as "eclipse", and stopped at
+  # 20:08, discarding maximum entirely.
+  window:
+    start: "2026-08-12T19:20:00"
+    end:   "2026-08-12T20:22:00"
+  step_minutes: 2
+
+  # Atmospheric refraction lifts the apparent sun by ~0.17 deg at 5 deg
+  # elevation and ~0.57 deg at the horizon. At this sun altitude that is not
+  # a rounding error, so the sweep uses apparent (refracted) elevation.
+  use_apparent_elevation: true
+
+  # Below this the sun is dropped from the series *and* from the composite
+  # denominator, so "1.0" stays reachable for a genuinely open site.
+  #
+  # The floor is set by how far the 1 m near field reaches. A 40 m blocker
+  # spans 2292 m at 1 deg and 3015 m at 0.76 deg, so 1 deg is the lowest sun
+  # still resolved entirely inside the 3000 m halo; below that the coarse rings
+  # would be answering for local buildings.
+  #
+  # It was 2 deg when the halo was 1200 m. That floor cut the series at 20:07,
+  # four minutes before maximum eclipse (apparent ~1.7 deg) — the single moment
+  # the map exists to describe. Raising the halo is what made 1 deg honest.
+  #
+  # Caveats that remain below ~1.5 deg: refraction varies with air temperature
+  # by more than 0.1 deg, the solar disc is 0.53 deg across so "visible" is
+  # really "disc centre visible", and extinction leaves the sun a dim red
+  # sliver that haze often hides completely.
+  min_elevation_deg: 1.0
+
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
+output:
+  dir: "data"
+  tiles:
+    min_zoom: 10
+    max_zoom: 16
+    # Red/green is the worst pairing for colour-vision deficiency (~8% of men).
+    # This ramp stays readable mono and for deuteranopia.
+    colormap: "magma"
+  pmtiles_name: "visibility.pmtiles"
+
+attribution: "Podkladová data © ČÚZK, CC BY 4.0"
+donation_url: ""           # e.g. https://ko-fi.com/USERNAME — empty hides the button

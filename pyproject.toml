@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sunline"
+version = "0.1.0"
+description = "Where a low sun is visible over a city, and where buildings, trees and terrain block it."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+
+dependencies = [
+  "numpy>=1.26",
+  "scipy>=1.11",       # ndimage.rotate for the sun-aligned sweep
+  "rasterio>=1.3",     # ships its own GDAL wheels
+  "pyproj>=3.6",
+  "pandas>=2.0",
+  "pvlib>=0.10",       # apparent (refracted) solar position
+  "PyYAML>=6.0",
+  "matplotlib>=3.8",   # colormaps only
+  "pmtiles>=3.2",
+  "skyfield>=1.45",  # eclipse contact times — pvlib does not model the moon
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+
+[project.scripts]
+sunline = "sunline.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

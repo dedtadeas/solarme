@@ -1,0 +1,48 @@
+name: Deploy map to GitHub Pages
+
+# The site is fully static: Pages serves the ~35 KB shell (HTML + JS + CSS) and
+# the PMTiles archives are read from S3 over HTTP range requests. Keeping the
+# tiles out of the repo is what lets coverage grow past Prague — national is
+# ~17 GB, and the archives no longer have to fit under 100 MB each.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tile origin is configured
+        run: |
+          # Archives are served from S3, so nothing here checks file sizes: the
+          # 100 MB per-file ceiling was GitHub's, and it no longer applies.
+          # What can break instead is shipping the local-dev default to
+          # production, where web/ holds no .pmtiles and every region fails soft
+          # to an empty map.
+          if grep -q 'window.TILE_BASE = ""' web/index.html; then
+            echo "::error::TILE_BASE is still the local-dev default in web/index.html."
+            echo "Set it to the bucket or CDN origin (trailing slash) before deploying."
+            exit 1
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+      - id: deploy
+        uses: actions/deploy-pages@v4

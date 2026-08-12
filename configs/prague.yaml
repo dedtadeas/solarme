@@ -1,0 +1,73 @@
+# SunLine — region: Prague (cloud twin of the root config.yaml)
+# Generated for the EC2 driver, which expects configs/<region>.yaml with
+# region-named outputs. Same physics and window as config.yaml; archives
+# are renamed prague->visibility when installed into web/.
+project:
+  name: SunLine — Prague, 12 Aug 2026 eclipse
+  slug: prague-eclipse-2026
+aoi:
+  crs: EPSG:5514
+  xmin: -753000
+  ymin: -1059000
+  xmax: -727000
+  ymax: -1033000
+  resolution: 1.0
+  buffer_m: 3000
+sweep:
+  coarse:
+    res: 5.0
+    halo_m: 13000
+    max_structure_m: 220
+sources:
+  surface:
+    url: https://ags.cuzk.gov.cz/arcgis/rest/services/3D/dmp/ImageServer
+    native_res: 0.5
+  terrain:
+    url: https://ags.cuzk.gov.cz/arcgis/rest/services/3D/dmr5g/ImageServer
+    native_res: 2.0
+  max_request_px:
+  - 15000
+  - 4100
+  service_extent:
+  - -905000
+  - -1228000
+  - -430000
+  - -934000
+  tile_px:
+  - 4000
+  - 4000
+  max_retries: 4
+  timeout_s: 180
+far_field:
+  enabled: true
+  radius_km: 100
+  start_distance_m: 13000
+  grid_spacing_m: 1000
+  rings:
+  - outer_km: 40
+    request_res_m: 10
+    march_step_m: 30
+  - outer_km: 100
+    request_res_m: 25
+    march_step_m: 75
+observer:
+  eye_height_m: 1.6
+  ground: terrain
+  covered_threshold_m: 2.0
+sun:
+  timezone: Europe/Prague
+  window:
+    start: '2026-08-12T19:20:00'
+    end: '2026-08-12T20:22:00'
+  step_minutes: 2
+  use_apparent_elevation: true
+  min_elevation_deg: 1.0
+output:
+  dir: data_prague
+  tiles:
+    min_zoom: 10
+    max_zoom: 16
+    colormap: magma
+  pmtiles_name: prague.pmtiles
+attribution: Podkladová data © ČÚZK, CC BY 4.0
+donation_url: ''

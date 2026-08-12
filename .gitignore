@@ -1,0 +1,30 @@
+# Intermediates are large and fully rebuildable with `make demo`: the raw
+# ČÚZK tiles (~5 GB per region), float rasters, MBTiles, reprojected copies.
+# NOTE: Config.out_dir resolves relative to the CONFIG FILE's directory, so
+# configs/north.yaml writes under configs/data_north/ — covered below.
+data/
+data_north/
+configs/data_*/
+
+# The tile archives are served from S3, not from this repo. PMTiles is read
+# with HTTP range requests, which any object store answers directly, so the
+# 100 MB per-file ceiling that forced one archive per region was a GitHub
+# constraint only — it does not apply to S3. National coverage is ~17 GB and
+# ~161 regions, which no git repo should carry. Set TILE_BASE in index.html
+# to the bucket or CDN origin; "./" keeps web/serve.py working locally.
+web/*.pmtiles
+
+# JPL ephemeris kernel, ~16 MB, fetched on demand into data/.
+de421.bsp
+
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.DS_Store
+
+# Personal photos carry GPS EXIF (exact home coordinates). This repo is wired
+# to GitHub Pages, so anything committed here becomes public. Delete these two
+# lines if you want them tracked.
+photos/

@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+"""Completeness gate for a region PMTiles archive.
+
+Usage: check_pmtiles_complete.py FILE lon_min lat_min lon_max lat_max
+
+Exit 0 only if BOTH hold:
+  1. the archive's header bounds cover the expected AOI (with a small margin)
+  2. a tile decodes non-empty at the archive's NORTH edge
+
+Why the north edge: the sweep writes blocks south-to-north, so an archive
+built from a partially-written raster has valid southern tiles and nothing in
+the north. A due existence check ("the file is there, 55 MB, looks fine")
+shipped exactly that failure to the live site once already today.
+"""
+
+from __future__ import annotations
+
+import io
+import math
+import sys
+
+
+def main() -> int:
+    path, lon0, lat0, lon1, lat1 = (
+        sys.argv[1],
+        float(sys.argv[2]),
+        float(sys.argv[3]),
+        float(sys.argv[4]),
+        float(sys.argv[5]),
+    )
+    from pmtiles.reader import MmapSource, Reader
+
+    with open(path, "rb") as fh:
+        r = Reader(MmapSource(fh))
+        h = r.header()
+
+        bounds = (
+            h["min_lon_e7"] / 1e7,
+            h["min_lat_e7"] / 1e7,
+            h["max_lon_e7"] / 1e7,
+            h["max_lat_e7"] / 1e7,
+        )
+        margin = 0.02  # ~1.5 km — publish crops to data, allow that
+        if not (
+            bounds[0] <= lon0 + margin
+            and bounds[1] <= lat0 + margin
+            and bounds[2] >= lon1 - margin
+            and bounds[3] >= lat1 - margin
+        ):
+            print(f"GATE FAIL: bounds {bounds} do not cover AOI", file=sys.stderr)
+            return 1
+
+        # North-edge probe: a tile just inside the top of the archive, at its
+        # max zoom, one third in from the west so we are not on a corner.
+        z = h["max_zoom"]
+        n = 2**z
+        lat = bounds[3] - 0.008  # just inside the northern boundary
+        lon = bounds[0] + (bounds[2] - bounds[0]) / 3
+        x = int((lon + 180) / 360 * n)
+        y = int(
+            (1 - math.log(math.tan(math.radians(lat)) + 1 / math.cos(math.radians(lat))) / math.pi)
+            / 2
+            * n
+        )
+        data = r.get(z, x, y)
+        if not data:
+            print(f"GATE FAIL: no tile at north edge z{z}/{x}/{y}", file=sys.stderr)
+            return 1
+
+        # Non-empty means the PNG carries actual pixels, not a blank stub.
+        from PIL import Image
+        import numpy as np
+
+        a = np.array(Image.open(io.BytesIO(data)).convert("RGBA"))
+        if (a[..., 3] > 0).mean() < 0.01:
+            print("GATE FAIL: north-edge tile decodes fully transparent", file=sys.stderr)
+            return 1
+
+    print(f"gate OK: bounds {bounds}, north tile z{z}/{x}/{y} has data")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
