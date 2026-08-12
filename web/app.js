@@ -15,6 +15,7 @@
 // silently gets nothing.
 const TILE_BASE = window.TILE_BASE || "./";
 const REGIONS = [
+  { id: "blansko", url: "blansko.pmtiles", maxUrl: "blansko_max.pmtiles" },
   { id: "brno", url: "brno.pmtiles", maxUrl: "brno_max.pmtiles" },
   { id: "ceske-budejovice", url: "ceske-budejovice.pmtiles", maxUrl: "ceske-budejovice_max.pmtiles" },
   { id: "decin", url: "decin.pmtiles", maxUrl: "decin_max.pmtiles" },
