@@ -30,6 +30,7 @@ const REGIONS = [
   { id: "jablonec", url: "jablonec.pmtiles", maxUrl: "jablonec_max.pmtiles" },
   { id: "jihlava", url: "jihlava.pmtiles", maxUrl: "jihlava_max.pmtiles" },
   { id: "karlovy-vary", url: "karlovy-vary.pmtiles", maxUrl: "karlovy-vary_max.pmtiles" },
+  { id: "kolin", url: "kolin.pmtiles", maxUrl: "kolin_max.pmtiles" },
   { id: "liberec", url: "liberec.pmtiles", maxUrl: "liberec_max.pmtiles" },
   { id: "mlada-boleslav", url: "mlada-boleslav.pmtiles", maxUrl: "mlada-boleslav_max.pmtiles" },
   { id: "most", url: "most.pmtiles", maxUrl: "most_max.pmtiles" },
@@ -52,6 +53,7 @@ const REGIONS = [
   { id: "vsetin", url: "vsetin.pmtiles", maxUrl: "vsetin_max.pmtiles" },
   { id: "west", url: "west.pmtiles", maxUrl: "west_max.pmtiles" },
   { id: "zlin", url: "zlin.pmtiles", maxUrl: "zlin_max.pmtiles" },
+  { id: "znojmo", url: "znojmo.pmtiles", maxUrl: "znojmo_max.pmtiles" },
 ].map((r) => ({ ...r, url: TILE_BASE + r.url, maxUrl: TILE_BASE + r.maxUrl }));
 let activeLayer = "fraction"; // "fraction" | "max"
 
