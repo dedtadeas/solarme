@@ -402,7 +402,15 @@ html, body {
 
 @media (max-width: 620px) {
   :root { --panel-w: calc(100vw - 28px); }
-  .panel--title { padding: 11px 14px; }
+
+  /* MapLibre stacks zoom, compass and geolocate down the top-right corner.
+     A full-width title panel lands straight on top of them, so give the panel
+     a 46 px right-hand column to breathe into — enough for a 29 px control
+     plus its margin. The other panels stay full width: nothing overlaps them. */
+  .panel--title {
+    padding: 11px 14px;
+    width: calc(var(--panel-w) - 46px);
+  }
 
   /* Expanded, this panel is ~394px of ramp, five control groups and two notes.
      On a 390x844 phone that left a 257px strip of map and still ran under the
@@ -420,4 +428,9 @@ html, body {
   #legend-toggle { display: inline-flex; align-items: center; justify-content: center; }
 
   .hint { bottom: auto; top: 50%; transform: translate(-50%, -50%); }
+
+  /* Every edge is spoken for by a panel that carries more than a scale bar
+     does, and at bottom-left it lands under the footer. The basemap's own
+     labels give enough sense of scale on a phone. */
+  .maplibregl-ctrl-scale { display: none; }
 }

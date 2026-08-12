@@ -33,8 +33,8 @@ let activeLayer = "fraction"; // "fraction" | "max"
  */
 const I18N = {
   cs: {
-    htmlTitle: "SunLine — kde Praha uvidí zatmění",
-    sub: "Kde Praha — a kraj na sever po Mělník — uvidí zatmělé slunce",
+    htmlTitle: "SunLine — kde uvidíte zatmění Slunce",
+    sub: "Kde uvidíte zatmělé slunce — ulici po ulici",
     when: "12. 8. 2026 · 19:20–20:16 · maximum 20:12",
     warn: "<strong>Chraňte si zrak.</strong> Pohled do slunce spálí sítnici — bezbolestně a trvale, i takhle nízko, i z většiny zakryté. Použijte brýle na zatmění s certifikací ISO 12312-2, nebo svářečské sklo č. 13–14. Sluneční brýle, CD, diskety, fotografický film ani začouzené sklo zrak <em>nechrání</em>.",
     legendHead: "Viditelnost slunce",
@@ -63,7 +63,7 @@ const I18N = {
     gateSupport: "Praha je hotová. Aby mapa pokryla celou republiku, zbývá spočítat 157 dlaždic 26 × 26 km.",
     gateSupportLink: "Zaplatit další dlaždici",
     missing: "chybí soubor {file} — vytvořte ho příkazem `make demo`.",
-    gateDesc: "Mapa ukazuje, odkud v Praze a okolí bude vidět částečné zatmění Slunce 12. srpna 2026 večer — a kde ho zakryjí domy, stromy a kopce. Slunce bude jen 1–9° nad obzorem, takže záleží na každé ulici.",
+    gateDesc: "Mapa ukazuje, odkud bude vidět částečné zatmění Slunce 12. srpna 2026 večer — a kde ho zakryjí domy, stromy a kopce. Slunce bude jen 1–9° nad obzorem, takže záleží na každé ulici.",
     gateOk: "Rozumím, budu si chránit zrak",
     steps: [
       "Nejdřív oči: do slunce se nikdy nedívejte bez brýlí s certifikací ISO 12312-2 nebo svářečského skla č. 13–14 — i z většiny zakryté slunce spálí sítnici, bezbolestně. Že se do něj dá pohodlně dívat, neznamená, že je to bezpečné. Sluneční brýle, CD, diskety, fotografický film ani začouzené sklo nechrání — a fotoaparát či dalekohled bez předního slunečního filtru je ještě horší.",
@@ -74,8 +74,8 @@ const I18N = {
     ],
   },
   en: {
-    htmlTitle: "SunLine — where Prague can see the eclipse",
-    sub: "Where Prague — and the country north to Mělník — can see the eclipse sun",
+    htmlTitle: "SunLine — where you can see the eclipse",
+    sub: "Where you can see the eclipsed sun — street by street",
     when: "12 Aug 2026 · 19:20–20:16 · max 20:12",
     warn: "<strong>Protect your eyes.</strong> Looking at the sun burns the retina — painlessly and permanently, even this low, even mostly eclipsed. Use ISO 12312-2 eclipse glasses or welder's glass shade 13–14. Sunglasses, CDs, floppy disks, photo film or smoked glass do <em>not</em> protect you.",
     legendHead: "Sun visible",
@@ -104,7 +104,7 @@ const I18N = {
     gateSupport: "Prague is done. Covering the whole country means computing 157 more tiles of 26 × 26 km.",
     gateSupportLink: "Pay for the next tile",
     missing: "{file} is missing — run `make demo` to build it.",
-    gateDesc: "This map shows where the partial solar eclipse of 12 August 2026 will be visible from in and around Prague — and where buildings, trees and hills block it. The sun will be only 1–9° above the horizon, so every street is different.",
+    gateDesc: "This map shows where the partial solar eclipse of 12 August 2026 will be visible from — and where buildings, trees and hills block it. The sun will be only 1–9° above the horizon, so every street is different.",
     gateOk: "I understand — I will protect my eyes",
     steps: [
       "First, your eyes: never look at the sun without ISO 12312-2 eclipse glasses or welder's glass shade 13–14 — a mostly-covered sun still burns the retina, painlessly, and feeling comfortable to look at does not mean it is safe. Sunglasses, CDs, floppy disks, photo film and smoked glass do not protect you, and cameras or binoculars without a front solar filter are worse, not better.",
