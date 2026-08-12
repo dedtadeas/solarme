@@ -17,10 +17,13 @@ const TILE_BASE = window.TILE_BASE || "./";
 const REGIONS = [
   { id: "ceske-budejovice", url: "ceske-budejovice.pmtiles", maxUrl: "ceske-budejovice_max.pmtiles" },
   { id: "decin", url: "decin.pmtiles", maxUrl: "decin_max.pmtiles" },
+  { id: "jihlava", url: "jihlava.pmtiles", maxUrl: "jihlava_max.pmtiles" },
   { id: "karlovy-vary", url: "karlovy-vary.pmtiles", maxUrl: "karlovy-vary_max.pmtiles" },
   { id: "liberec", url: "liberec.pmtiles", maxUrl: "liberec_max.pmtiles" },
+  { id: "most", url: "most.pmtiles", maxUrl: "most_max.pmtiles" },
   { id: "north", url: "north.pmtiles", maxUrl: "north_max.pmtiles" },
   { id: "northwest", url: "northwest.pmtiles", maxUrl: "northwest_max.pmtiles" },
+  { id: "plzen", url: "plzen.pmtiles", maxUrl: "plzen_max.pmtiles" },
   { id: "prague", url: "visibility.pmtiles", maxUrl: "visibility_max.pmtiles" },
   { id: "usti", url: "usti.pmtiles", maxUrl: "usti_max.pmtiles" },
   { id: "west", url: "west.pmtiles", maxUrl: "west_max.pmtiles" },
