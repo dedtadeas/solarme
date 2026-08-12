@@ -44,6 +44,7 @@ const REGIONS = [
   { id: "plzen", url: "plzen.pmtiles", maxUrl: "plzen_max.pmtiles" },
   { id: "prague", url: "visibility.pmtiles", maxUrl: "visibility_max.pmtiles" },
   { id: "prerov", url: "prerov.pmtiles", maxUrl: "prerov_max.pmtiles" },
+  { id: "pribram", url: "pribram.pmtiles", maxUrl: "pribram_max.pmtiles" },
   { id: "prostejov", url: "prostejov.pmtiles", maxUrl: "prostejov_max.pmtiles" },
   { id: "slapanice", url: "slapanice.pmtiles", maxUrl: "slapanice_max.pmtiles" },
   { id: "tabor", url: "tabor.pmtiles", maxUrl: "tabor_max.pmtiles" },
