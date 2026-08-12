@@ -46,6 +46,7 @@ const REGIONS = [
   { id: "slapanice", url: "slapanice.pmtiles", maxUrl: "slapanice_max.pmtiles" },
   { id: "tabor", url: "tabor.pmtiles", maxUrl: "tabor_max.pmtiles" },
   { id: "teplice", url: "teplice.pmtiles", maxUrl: "teplice_max.pmtiles" },
+  { id: "trebic", url: "trebic.pmtiles", maxUrl: "trebic_max.pmtiles" },
   { id: "trinec", url: "trinec.pmtiles", maxUrl: "trinec_max.pmtiles" },
   { id: "usti", url: "usti.pmtiles", maxUrl: "usti_max.pmtiles" },
   { id: "vsetin", url: "vsetin.pmtiles", maxUrl: "vsetin_max.pmtiles" },
