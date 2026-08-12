@@ -16,6 +16,8 @@
 const TILE_BASE = window.TILE_BASE || "./";
 const REGIONS = [
   { id: "blansko", url: "blansko.pmtiles", maxUrl: "blansko_max.pmtiles" },
+  { id: "bojiste", url: "bojiste.pmtiles", maxUrl: "bojiste_max.pmtiles" },
+  { id: "bosilec", url: "bosilec.pmtiles", maxUrl: "bosilec_max.pmtiles" },
   { id: "brandys", url: "brandys.pmtiles", maxUrl: "brandys_max.pmtiles" },
   { id: "breclav", url: "breclav.pmtiles", maxUrl: "breclav_max.pmtiles" },
   { id: "brno", url: "brno.pmtiles", maxUrl: "brno_max.pmtiles" },
@@ -24,7 +26,9 @@ const REGIONS = [
   { id: "ceska-lipa", url: "ceska-lipa.pmtiles", maxUrl: "ceska-lipa_max.pmtiles" },
   { id: "ceske-budejovice", url: "ceske-budejovice.pmtiles", maxUrl: "ceske-budejovice_max.pmtiles" },
   { id: "cheb", url: "cheb.pmtiles", maxUrl: "cheb_max.pmtiles" },
+  { id: "cheznovice", url: "cheznovice.pmtiles", maxUrl: "cheznovice_max.pmtiles" },
   { id: "chomutov", url: "chomutov.pmtiles", maxUrl: "chomutov_max.pmtiles" },
+  { id: "chuderice", url: "chuderice.pmtiles", maxUrl: "chuderice_max.pmtiles" },
   { id: "decin", url: "decin.pmtiles", maxUrl: "decin_max.pmtiles" },
   { id: "dvur-kralove", url: "dvur-kralove.pmtiles", maxUrl: "dvur-kralove_max.pmtiles" },
   { id: "frydek-mistek", url: "frydek-mistek.pmtiles", maxUrl: "frydek-mistek_max.pmtiles" },
@@ -50,6 +54,7 @@ const REGIONS = [
   { id: "most", url: "most.pmtiles", maxUrl: "most_max.pmtiles" },
   { id: "north", url: "north.pmtiles", maxUrl: "north_max.pmtiles" },
   { id: "northwest", url: "northwest.pmtiles", maxUrl: "northwest_max.pmtiles" },
+  { id: "novy-prerov", url: "novy-prerov.pmtiles", maxUrl: "novy-prerov_max.pmtiles" },
   { id: "nymburk", url: "nymburk.pmtiles", maxUrl: "nymburk_max.pmtiles" },
   { id: "olomouc", url: "olomouc.pmtiles", maxUrl: "olomouc_max.pmtiles" },
   { id: "opava", url: "opava.pmtiles", maxUrl: "opava_max.pmtiles" },
