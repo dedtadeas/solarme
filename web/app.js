@@ -23,10 +23,12 @@ const REGIONS = [
   { id: "most", url: "most.pmtiles", maxUrl: "most_max.pmtiles" },
   { id: "north", url: "north.pmtiles", maxUrl: "north_max.pmtiles" },
   { id: "northwest", url: "northwest.pmtiles", maxUrl: "northwest_max.pmtiles" },
+  { id: "olomouc", url: "olomouc.pmtiles", maxUrl: "olomouc_max.pmtiles" },
   { id: "plzen", url: "plzen.pmtiles", maxUrl: "plzen_max.pmtiles" },
   { id: "prague", url: "visibility.pmtiles", maxUrl: "visibility_max.pmtiles" },
   { id: "usti", url: "usti.pmtiles", maxUrl: "usti_max.pmtiles" },
   { id: "west", url: "west.pmtiles", maxUrl: "west_max.pmtiles" },
+  { id: "zlin", url: "zlin.pmtiles", maxUrl: "zlin_max.pmtiles" },
 ].map((r) => ({ ...r, url: TILE_BASE + r.url, maxUrl: TILE_BASE + r.maxUrl }));
 let activeLayer = "fraction"; // "fraction" | "max"
 
@@ -37,7 +39,7 @@ let activeLayer = "fraction"; // "fraction" | "max"
  */
 const I18N = {
   cs: {
-    htmlTitle: "SunLine — kde uvidíte zatmění Slunce",
+    htmlTitle: "SolarMe — kde uvidíte zatmění Slunce",
     sub: "Kde uvidíte zatmělé slunce — ulici po ulici",
     when: "12. 8. 2026 · 19:20–20:16 · maximum 20:12",
     warn: "<strong>Chraňte si zrak.</strong> Pohled do slunce spálí sítnici — bezbolestně a trvale, i takhle nízko, i z většiny zakryté. Použijte brýle na zatmění s certifikací ISO 12312-2, nebo svářečské sklo č. 13–14. Sluneční brýle, CD, diskety, fotografický film ani začouzené sklo zrak <em>nechrání</em>.",
@@ -78,7 +80,7 @@ const I18N = {
     ],
   },
   en: {
-    htmlTitle: "SunLine — where you can see the eclipse",
+    htmlTitle: "SolarMe — where you can see the eclipse",
     sub: "Where you can see the eclipsed sun — street by street",
     when: "12 Aug 2026 · 19:20–20:16 · max 20:12",
     warn: "<strong>Protect your eyes.</strong> Looking at the sun burns the retina — painlessly and permanently, even this low, even mostly eclipsed. Use ISO 12312-2 eclipse glasses or welder's glass shade 13–14. Sunglasses, CDs, floppy disks, photo film or smoked glass do <em>not</em> protect you.",

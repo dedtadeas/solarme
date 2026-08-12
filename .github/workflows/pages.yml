@@ -40,6 +40,19 @@ jobs:
             exit 1
           fi
 
+      - name: Version the assets against the browser cache
+        run: |
+          # Pages serves everything with max-age=600, so a returning visitor can
+          # sit on a 10-minute-old app.js or coverage.geojson — and those two
+          # carry the region list, which changes every time a tile lands. The
+          # HTML expires on its own within 10 minutes; versioning what it points
+          # at means the moment it does, every asset is fetched fresh.
+          V=${GITHUB_SHA::7}
+          sed -i "s|\./app\.js|./app.js?v=$V|g; s|\./style\.css|./style.css?v=$V|g" web/index.html
+          sed -i "s|\"\./coverage\.geojson\"|\"./coverage.geojson?v=$V\"|g" web/app.js
+          echo "assets versioned as v=$V"
+          grep -o 'app\.js?v=[a-f0-9]*' web/index.html || true
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
