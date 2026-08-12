@@ -52,7 +52,9 @@ const I18N = {
     note1: "Od prvního kontaktu do západu slunce. Oči 1,6 m nad zemí; slunce 9,4°–1,1° nad obzorem, ZSZ. Maximum zatmění 20:11:45, magnituda 0,885.",
     note2: "Model povrchu: lidar ČÚZK — obsahuje stavby dokončené nejméně do roku 2022 (ověřeno na budovách z let 2018 a 2022). Novější mohou chybět.",
     skip: "Přeskočit", next: "Další", done: "Rozumím",
-    source: "Zdrojový kód", support: "Podpořte mapu",
+    source: "Zdrojový kód", support: "Podpořit", controlsBtn: "Nastavení mapy",
+    gateSupport: "Praha je hotová. Aby mapa pokryla celou republiku, zbývá spočítat 157 dlaždic 26 × 26 km.",
+    gateSupportLink: "Zaplatit další dlaždici",
     missing: "chybí soubor {file} — vytvořte ho příkazem `make demo`.",
     gateDesc: "Mapa ukazuje, odkud v Praze a okolí bude vidět částečné zatmění Slunce 12. srpna 2026 večer — a kde ho zakryjí domy, stromy a kopce. Slunce bude jen 1–9° nad obzorem, takže záleží na každé ulici.",
     gateOk: "Rozumím, budu si chránit zrak",
@@ -87,7 +89,9 @@ const I18N = {
     note1: "First contact to sunset. Eye height 1.6 m above ground; sun 9.4° down to 1.1°, WNW. Maximum eclipse 20:11:45, magnitude 0.885.",
     note2: "Surface model: ČÚZK national lidar — includes construction through at least 2022 (checked against buildings finished in 2018 and 2022). Anything newer may be missing.",
     skip: "Skip", next: "Next", done: "Got it",
-    source: "Source", support: "Support this map",
+    source: "Source", support: "Support", controlsBtn: "Map settings",
+    gateSupport: "Prague is done. Covering the whole country means computing 157 more tiles of 26 × 26 km.",
+    gateSupportLink: "Pay for the next tile",
     missing: "{file} is missing — run `make demo` to build it.",
     gateDesc: "This map shows where the partial solar eclipse of 12 August 2026 will be visible from in and around Prague — and where buildings, trees and hills block it. The sun will be only 1–9° above the horizon, so every street is different.",
     gateOk: "I understand — I will protect my eyes",
@@ -499,9 +503,36 @@ document.addEventListener("keydown", (e) => {
 applyLang(LANG);
 
 /* ── donation link — hidden until a URL is set, as in the alley kit ── */
+/* ── legend collapse, phones only ─────────────────────────────────────────
+ * The panel is the ramp plus five control groups and two notes. That is fine
+ * in a 286 px desktop column and far too much on a phone held outdoors, where
+ * the map is the entire product. The ramp stays visible because it is the
+ * legend; the settings fold away. Desktop is untouched — the button is
+ * display:none above 620 px.
+ */
+const legendEl = document.getElementById("legend");
+const legendToggle = document.getElementById("legend-toggle");
+const phoneQuery = window.matchMedia("(max-width: 620px)");
+
+function setLegendOpen(open) {
+  legendEl.classList.toggle("collapsed", !open);
+  legendToggle.setAttribute("aria-expanded", String(open));
+  legendToggle.textContent = open ? "▴" : "▾";
+}
+setLegendOpen(!phoneQuery.matches);
+legendToggle.addEventListener("click", () =>
+  setLegendOpen(legendEl.classList.contains("collapsed")),
+);
+// Rotating the phone must not leave it collapsed on a wide screen.
+phoneQuery.addEventListener("change", (e) => setLegendOpen(!e.matches));
+
 if (DONATION_URL) {
-  const a = document.getElementById("kofi");
-  a.href = DONATION_URL;
-  a.hidden = false;
-  document.getElementById("kofi-dot").hidden = false;
+  for (const id of ["kofi", "gate-kofi"]) {
+    const a = document.getElementById(id);
+    a.href = DONATION_URL;
+    a.hidden = false;
+  }
+  // The whole row is hidden, not just the link, so the explanatory sentence
+  // never appears without something to click.
+  document.getElementById("gate-support").hidden = false;
 }

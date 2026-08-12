@@ -26,13 +26,21 @@
 <section class="panel panel--legend" id="legend">
   <div class="legend-head">
     <span data-i18n="legendHead"></span>
-    <button id="guide-open" data-i18n-title="guideBtn" aria-label="Guide">?</button>
+    <div class="legend-head-btns">
+      <button id="legend-toggle" type="button" aria-expanded="true" aria-controls="legend-body"
+              data-i18n-title="controlsBtn" aria-label="Map settings">▾</button>
+      <button id="guide-open" data-i18n-title="guideBtn" aria-label="Guide">?</button>
+    </div>
   </div>
 
   <div class="ramp" role="img"></div>
   <div class="ramp-labels">
     <span data-i18n="rampNever"></span><span data-i18n="rampHalf"></span><span data-i18n="rampWhole"></span>
   </div>
+
+  <!-- The ramp above IS the legend and always shows. Everything below is
+       settings, and on a phone it starts collapsed so the map keeps the screen. -->
+  <div class="legend-body" id="legend-body">
 
   <label class="slider">
     <span data-i18n="opacity"></span>
@@ -69,6 +77,7 @@
 
   <p class="note" data-i18n="note1"></p>
   <p class="note" data-i18n="note2"></p>
+  </div>
 </section>
 
 <div class="gate" id="gate" hidden>
@@ -77,6 +86,12 @@
     <p data-i18n="gateDesc"></p>
     <p class="warn" data-i18n="warn"></p>
     <button id="gate-ok" data-i18n="gateOk"></button>
+    <!-- Below the safety button on purpose: the acknowledgement above is about
+         retinal burns and nothing may compete with it for attention. -->
+    <p class="gate-support" id="gate-support" hidden>
+      <span data-i18n="gateSupport"></span>
+      <a id="gate-kofi" href="#" target="_blank" rel="noopener" data-i18n="gateSupportLink"></a>
+    </p>
   </div>
 </div>
 
@@ -94,8 +109,7 @@
 <footer class="panel panel--foot">
   <span>Podkladová data © <a href="https://geoportal.cuzk.cz" target="_blank" rel="noopener">ČÚZK</a>, CC BY 4.0</span>
   <span class="dot">·</span>
-  <a href="https://github.com/USERNAME/sunline" target="_blank" rel="noopener" data-i18n="source"></a>
-  <span class="dot" id="kofi-dot" hidden>·</span>
+  <a href="https://github.com/dedtadeas/solarme" target="_blank" rel="noopener" data-i18n="source"></a>
   <a id="kofi" href="#" target="_blank" rel="noopener" hidden data-i18n="support"></a>
 </footer>
 
@@ -105,7 +119,7 @@
      is ~90 MB and national coverage is ~17 GB. Point this at the bucket or CDN
      origin (trailing slash required). Leave it unset for local dev, where
      web/serve.py serves the archives from this directory. -->
-<script>window.TILE_BASE = "";</script>
+<script>window.TILE_BASE = "https://sunline-pilot-774672614717.s3.eu-central-1.amazonaws.com/tiles/";</script>
 <script src="./app.js"></script>
 </body>
 </html>

@@ -78,7 +78,24 @@ html, body {
 .when { color: var(--warm); font-variant-numeric: tabular-nums; }
 
 /* ── legend ── */
-.panel--legend { bottom: 52px; left: 14px; padding: 13px 15px; width: var(--panel-w); }
+/* 86px, not 52: the footer below is bottom-anchored in the same column and runs
+   ~64px tall once its licence line wraps, so 52 put the last note underneath it. */
+.panel--legend { bottom: 86px; left: 14px; padding: 13px 15px; width: var(--panel-w); }
+.legend-head-btns { display: flex; align-items: center; gap: 6px; }
+#legend-toggle {
+  display: none;          /* desktop has the room; the phone gets the control */
+  width: 21px; height: 21px;
+  padding: 0;
+  border: 1px solid var(--edge);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-dim);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+#legend-toggle:hover { color: var(--warm); border-color: var(--warm); }
+#legend-toggle:focus-visible { outline: 2px solid var(--warm); outline-offset: 2px; }
 .legend-head {
   display: flex;
   align-items: center;
@@ -264,6 +281,59 @@ html, body {
 .panel--foot a:hover { color: var(--warm); border-color: var(--warm); }
 .dot { opacity: 0.4; }
 
+/* The donation link is the one place this interface asks for anything, so it
+   gets a shape instead of sitting third in a row of grey links. The mark is the
+   subject itself: an amber disc with a bite out of its western limb — what the
+   sun actually looks like at 20:12 on the day this map is for. It appears
+   nowhere else on the page. */
+#kofi {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 8px;
+  border: 1px solid rgba(240, 160, 75, 0.45);
+  border-radius: 999px;
+  color: var(--warm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+#kofi::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--warm);
+  box-shadow: inset -3.5px 0 0 rgba(24, 19, 16, 0.9);
+}
+#kofi:hover,
+#kofi:focus-visible {
+  background: rgba(240, 160, 75, 0.14);
+  border-color: var(--warm);
+  color: var(--warm);
+}
+#kofi:focus-visible { outline: 2px solid var(--warm); outline-offset: 2px; }
+
+/* Subordinate by construction: a hairline above it, dimmed text, and it comes
+   after the safety button in both DOM and tab order. Outranks `.gate-card p`
+   (0,1,1) with its two classes (0,2,0), or the card's body styles would win. */
+.gate-card .gate-support {
+  margin: 15px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--edge);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+}
+.gate-card .gate-support a {
+  color: var(--warm);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(240, 160, 75, 0.4);
+  white-space: nowrap;
+}
+.gate-card .gate-support a:hover { border-bottom-color: var(--warm); }
+.gate-card .gate-support a:focus-visible { outline: 2px solid var(--warm); outline-offset: 2px; }
+
 /* MapLibre's own chrome, restyled to match. */
 .maplibregl-ctrl-attrib { font-size: 10px !important; }
 .maplibregl-ctrl-group { background: var(--panel) !important; border: 1px solid var(--edge) !important; }
@@ -273,6 +343,21 @@ html, body {
 @media (max-width: 620px) {
   :root { --panel-w: calc(100vw - 28px); }
   .panel--title { padding: 11px 14px; }
-  .panel--legend { bottom: 48px; }
+
+  /* Expanded, this panel is ~394px of ramp, five control groups and two notes.
+     On a 390x844 phone that left a 257px strip of map and still ran under the
+     footer; on a 667px-tall phone, ~80px. So: collapsed by default, capped at
+     half the viewport when open, and scrolling inside itself rather than
+     growing into the map. */
+  .panel--legend {
+    bottom: 76px;
+    max-height: 52vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .panel--legend.collapsed { max-height: none; overflow: visible; }
+  .panel--legend.collapsed .legend-body { display: none; }
+  #legend-toggle { display: inline-flex; align-items: center; justify-content: center; }
+
   .hint { bottom: auto; top: 50%; transform: translate(-50%, -50%); }
 }

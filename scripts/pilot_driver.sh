@@ -55,7 +55,12 @@ for R in "${REGIONS[@]}"; do
   OUT="configs/data_${R}"
 
   t fetch     "$R" $PY -m sunline.cli fetch       -c "$CFG"
-  t composite "$R" $PY -m sunline.cli composite   -c "$CFG" --workers 45
+  # 45 was tuned for the 16xlarge: 45 of 64 vCPU, ~5.7 GB of its 256 GB per
+  # worker. Scale by the same memory-per-worker ratio on other sizes, or the
+  # instance is either starved of parallelism or OOMs. Wave 1-3 ran the default
+  # on every size, which is why the 48xlarge showed no gain over the 16xlarge:
+  # it was using a quarter of its cores.
+  t composite "$R" $PY -m sunline.cli composite   -c "$CFG" --workers "${WORKERS:-45}"
   t publish   "$R" $PY -m sunline.cli publish     -c "$CFG"
   t publimax  "$R" $PY -m sunline.cli publish-max -c "$CFG"
 
