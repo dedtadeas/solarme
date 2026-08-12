@@ -19,6 +19,7 @@ const REGIONS = [
   { id: "brno", url: "brno.pmtiles", maxUrl: "brno_max.pmtiles" },
   { id: "ceske-budejovice", url: "ceske-budejovice.pmtiles", maxUrl: "ceske-budejovice_max.pmtiles" },
   { id: "decin", url: "decin.pmtiles", maxUrl: "decin_max.pmtiles" },
+  { id: "dvur-kralove", url: "dvur-kralove.pmtiles", maxUrl: "dvur-kralove_max.pmtiles" },
   { id: "frydek-mistek", url: "frydek-mistek.pmtiles", maxUrl: "frydek-mistek_max.pmtiles" },
   { id: "havirov", url: "havirov.pmtiles", maxUrl: "havirov_max.pmtiles" },
   { id: "hradec-kralove", url: "hradec-kralove.pmtiles", maxUrl: "hradec-kralove_max.pmtiles" },
