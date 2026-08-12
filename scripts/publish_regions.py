@@ -52,6 +52,8 @@ def main() -> int:
         if m:
             found.setdefault(m.group(1), set()).add(m.group(2))
 
+    serving = {ln.split()[-1].removesuffix(".pmtiles")
+               for ln in s3("ls", f"s3://{BUCKET}/tiles/").splitlines() if ln.strip()}
     published: list[str] = []
     for region, archives in sorted(found.items()):
         if region not in archives:  # the base archive is mandatory
@@ -62,7 +64,11 @@ def main() -> int:
             for l in listing.splitlines()
             if f"/results/{region}/{region}.pmtiles" in l
         )
-        for a in sorted(archives):
+        # Only copy what is not already serving. Re-copying every archive on
+        # every run turned a 5-second script into a 2-minute one once there
+        # were 39 regions, for no benefit — the sources never change.
+        todo = sorted(a for a in archives if a not in serving)
+        for a in todo:
             s3(
                 "cp",
                 f"s3://{BUCKET}/{src_wave}/results/{region}/{a}.pmtiles",
@@ -70,7 +76,8 @@ def main() -> int:
                 "--only-show-errors",
             )
         published.append(region)
-        print(f"  published {region} ({len(archives)} archive(s))")
+        if todo:
+            print(f"  published {region} ({len(todo)} new archive(s))")
 
     live = set(PILOT) | set(published)
 
