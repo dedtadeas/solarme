@@ -21,6 +21,7 @@ const REGIONS = [
   { id: "frydek-mistek", url: "frydek-mistek.pmtiles", maxUrl: "frydek-mistek_max.pmtiles" },
   { id: "havirov", url: "havirov.pmtiles", maxUrl: "havirov_max.pmtiles" },
   { id: "hradec-kralove", url: "hradec-kralove.pmtiles", maxUrl: "hradec-kralove_max.pmtiles" },
+  { id: "hronov", url: "hronov.pmtiles", maxUrl: "hronov_max.pmtiles" },
   { id: "jihlava", url: "jihlava.pmtiles", maxUrl: "jihlava_max.pmtiles" },
   { id: "karlovy-vary", url: "karlovy-vary.pmtiles", maxUrl: "karlovy-vary_max.pmtiles" },
   { id: "liberec", url: "liberec.pmtiles", maxUrl: "liberec_max.pmtiles" },
