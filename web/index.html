@@ -143,11 +143,13 @@
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
-<!-- Where the .pmtiles archives live. They are not in the repo: a region pair
-     is ~90 MB and national coverage is ~17 GB. Point this at the bucket or CDN
-     origin (trailing slash required). Leave it unset for local dev, where
-     web/serve.py serves the archives from this directory. -->
-<script>window.TILE_BASE = "https://sunline-pilot-774672614717.s3.eu-central-1.amazonaws.com/tiles/";</script>
+<!-- Where the .pmtiles archives live. Not in the repo: a region pair is ~90 MB
+     and 71 regions is ~6 GB. Served through CloudFront rather than straight from
+     S3 — same per-GB rate, but a 1 TB/month free tier instead of 100 GB, and the
+     edge caches a whole archive on first touch so later byte ranges never reach
+     the origin (verified: a second, different range returns x-cache: Hit).
+     Trailing slash required. Leave empty for local dev via web/serve.py. -->
+<script>window.TILE_BASE = "https://d20dgz2znvrjzl.cloudfront.net/tiles/";</script>
 <script src="./app.js"></script>
 </body>
 </html>
