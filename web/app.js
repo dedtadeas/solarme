@@ -41,6 +41,7 @@ const REGIONS = [
   { id: "slapanice", url: "slapanice.pmtiles", maxUrl: "slapanice_max.pmtiles" },
   { id: "trinec", url: "trinec.pmtiles", maxUrl: "trinec_max.pmtiles" },
   { id: "usti", url: "usti.pmtiles", maxUrl: "usti_max.pmtiles" },
+  { id: "vsetin", url: "vsetin.pmtiles", maxUrl: "vsetin_max.pmtiles" },
   { id: "west", url: "west.pmtiles", maxUrl: "west_max.pmtiles" },
   { id: "zlin", url: "zlin.pmtiles", maxUrl: "zlin_max.pmtiles" },
 ].map((r) => ({ ...r, url: TILE_BASE + r.url, maxUrl: TILE_BASE + r.maxUrl }));
