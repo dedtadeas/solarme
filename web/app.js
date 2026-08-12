@@ -16,6 +16,8 @@
 const TILE_BASE = window.TILE_BASE || "./";
 const REGIONS = [
   { id: "ceske-budejovice", url: "ceske-budejovice.pmtiles", maxUrl: "ceske-budejovice_max.pmtiles" },
+  { id: "decin", url: "decin.pmtiles", maxUrl: "decin_max.pmtiles" },
+  { id: "karlovy-vary", url: "karlovy-vary.pmtiles", maxUrl: "karlovy-vary_max.pmtiles" },
   { id: "north", url: "north.pmtiles", maxUrl: "north_max.pmtiles" },
   { id: "northwest", url: "northwest.pmtiles", maxUrl: "northwest_max.pmtiles" },
   { id: "prague", url: "visibility.pmtiles", maxUrl: "visibility_max.pmtiles" },
