@@ -15,11 +15,12 @@
 // silently gets nothing.
 const TILE_BASE = window.TILE_BASE || "./";
 const REGIONS = [
-  { id: "prague", url: "visibility.pmtiles", maxUrl: "visibility_max.pmtiles" },
+  { id: "ceske-budejovice", url: "ceske-budejovice.pmtiles", maxUrl: "ceske-budejovice_max.pmtiles" },
   { id: "north", url: "north.pmtiles", maxUrl: "north_max.pmtiles" },
-  // Built in the cloud; a region whose archive is not uploaded yet fails soft.
-  { id: "west", url: "west.pmtiles", maxUrl: "west_max.pmtiles" },
   { id: "northwest", url: "northwest.pmtiles", maxUrl: "northwest_max.pmtiles" },
+  { id: "prague", url: "visibility.pmtiles", maxUrl: "visibility_max.pmtiles" },
+  { id: "usti", url: "usti.pmtiles", maxUrl: "usti_max.pmtiles" },
+  { id: "west", url: "west.pmtiles", maxUrl: "west_max.pmtiles" },
 ].map((r) => ({ ...r, url: TILE_BASE + r.url, maxUrl: TILE_BASE + r.maxUrl }));
 let activeLayer = "fraction"; // "fraction" | "max"
 
