@@ -16,8 +16,10 @@ before the scientific stack is installed. Mosaicking shells out to gdalbuildvrt.
 
 from __future__ import annotations
 
+import http.client
 import concurrent.futures as cf
 import math
+import random
 import subprocess
 import sys
 import time
@@ -145,10 +147,23 @@ def _download_tile(
             tmp.write_bytes(body)
             tmp.replace(dest)  # atomic, so an interrupted run resumes cleanly
             return tile, "ok"
-        except (urllib.error.URLError, RuntimeError, TimeoutError, OSError) as exc:
+        except (
+            urllib.error.URLError,
+            RuntimeError,
+            TimeoutError,
+            OSError,
+            # IncompleteRead is an HTTPException, NOT an OSError, so it used to
+            # escape this handler entirely and kill the whole run. ČÚZK
+            # truncates large far-field ring bodies under concurrent load —
+            # four of eight instances died on exactly this — and a truncated
+            # body is the most retryable failure there is.
+            http.client.HTTPException,
+        ) as exc:
             last = exc
             if attempt < retries - 1:
-                time.sleep(2**attempt)  # back off; the service throttles
+                # Jitter: without it, N instances throttled at the same moment
+                # retry in lockstep and throttle each other again.
+                time.sleep(2**attempt + random.uniform(0, 1.5))
 
     raise RuntimeError(f"{tile.name} failed after {retries} attempts: {last}")
 

@@ -21,6 +21,15 @@
     </div>
   </div>
   <p class="sub"><span data-i18n="sub"></span><br><span class="when" data-i18n="when"></span></p>
+
+  <div class="search" role="search">
+    <input id="q" type="search" autocomplete="off" spellcheck="false"
+           data-i18n-placeholder="searchPlaceholder" aria-label="Search for a place"
+           aria-controls="q-results" aria-expanded="false">
+    <button id="q-clear" type="button" hidden aria-label="Clear">×</button>
+    <ul id="q-results" class="search-results" role="listbox" hidden></ul>
+    <p id="q-note" class="search-note" hidden></p>
+  </div>
 </header>
 
 <section class="panel panel--legend" id="legend">

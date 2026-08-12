@@ -54,6 +54,9 @@ const I18N = {
     skip: "Přeskočit", next: "Další", done: "Rozumím",
     source: "Zdrojový kód", support: "Podpořit", controlsBtn: "Nastavení mapy",
     coverageNote: "Rámečky ukazují, kde je metrová analýza spočítaná. Přibližte se do některého z nich. Čárkované se právě počítají.",
+    searchPlaceholder: "Najít adresu nebo místo…",
+    searchNoResults: "Nic jsme nenašli. Zkuste jiný zápis.",
+    searchOutside: "Tady zatím analýza spočítaná není — vyberte místo v některém z rámečků.",
     gateSupport: "Praha je hotová. Aby mapa pokryla celou republiku, zbývá spočítat 157 dlaždic 26 × 26 km.",
     gateSupportLink: "Zaplatit další dlaždici",
     missing: "chybí soubor {file} — vytvořte ho příkazem `make demo`.",
@@ -92,6 +95,9 @@ const I18N = {
     skip: "Skip", next: "Next", done: "Got it",
     source: "Source", support: "Support", controlsBtn: "Map settings",
     coverageNote: "Outlines show where the 1 m analysis exists. Zoom into one. Dashed outlines are still building.",
+    searchPlaceholder: "Find an address or place…",
+    searchNoResults: "Nothing found. Try a different spelling.",
+    searchOutside: "No analysis here yet — pick a place inside one of the outlined areas.",
     gateSupport: "Prague is done. Covering the whole country means computing 157 more tiles of 26 × 26 km.",
     gateSupportLink: "Pay for the next tile",
     missing: "{file} is missing — run `make demo` to build it.",
@@ -127,6 +133,9 @@ function applyLang(lang) {
   });
   document.querySelectorAll("[data-i18n-title]").forEach((el) => {
     el.title = t(el.dataset.i18nTitle);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
   });
   document.querySelectorAll("[data-lang]").forEach((b) => {
     b.classList.toggle("on", b.dataset.lang === lang);
@@ -243,6 +252,33 @@ map.addControl(
 );
 map.addControl(new maplibregl.ScaleControl({ maxWidth: 110, unit: "metric" }));
 
+/* Hourglass drawn to a canvas: an icon needs no glyph stack, whereas a text
+ * field would need a `glyphs` URL this style does not have. Amber on nothing,
+ * so it reads on both the dark and the satellite basemap. */
+function hourglassIcon(size = 44) {
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g = c.getContext("2d");
+  const m = size * 0.24, top = size * 0.16, bot = size * 0.84, mid = size * 0.5;
+  g.lineWidth = size * 0.075;
+  g.lineJoin = "round";
+  g.lineCap = "round";
+  // Dark halo first, so the shape survives a bright satellite tile underneath.
+  g.strokeStyle = "rgba(20, 16, 14, 0.85)";
+  g.lineWidth = size * 0.16;
+  for (const y of [top, bot]) {
+    g.beginPath(); g.moveTo(m, y); g.lineTo(size - m, y); g.lineTo(mid, mid); g.closePath(); g.stroke();
+  }
+  g.strokeStyle = "#f0a04b";
+  g.fillStyle = "rgba(240, 160, 75, 0.8)";
+  g.lineWidth = size * 0.075;
+  for (const y of [top, bot]) {
+    g.beginPath(); g.moveTo(m, y); g.lineTo(size - m, y); g.lineTo(mid, mid); g.closePath();
+    g.fill(); g.stroke();
+  }
+  return g.getImageData(0, 0, size, size);
+}
+
 map.on("load", async () => {
   /* ── coverage footprints ────────────────────────────────────────────────
    * The archives only carry z12 and up, so zooming out to see the country
@@ -270,6 +306,13 @@ map.on("load", async () => {
     paint: { "line-color": "#f0a04b", "line-width": 1.2, "line-opacity": fade(0.8, 0) },
   });
   map.addLayer({
+    id: "coverage-fill-soon",
+    type: "fill",
+    source: "coverage",
+    filter: ["!=", ["get", "status"], "live"],
+    paint: { "fill-color": "#f0a04b", "fill-opacity": fade(0.05, 0) },
+  });
+  map.addLayer({
     id: "coverage-line-soon",
     type: "line",
     source: "coverage",
@@ -280,6 +323,23 @@ map.on("load", async () => {
       "line-dasharray": [2, 2],
       "line-opacity": fade(0.45, 0),
     },
+  });
+
+  // An hourglass at the centre of each region still building. Drawn to a
+  // canvas rather than set as text, because this style carries no `glyphs`
+  // URL and a symbol layer with a text-field would silently render nothing.
+  map.addImage("hourglass", hourglassIcon(), { pixelRatio: 2 });
+  map.addLayer({
+    id: "coverage-pending-icon",
+    type: "symbol",
+    source: "coverage",
+    filter: ["!=", ["get", "status"], "live"],
+    layout: {
+      "icon-image": "hourglass",
+      "icon-size": 1,
+      "icon-allow-overlap": true, // adjacent city tiles must not hide each other
+    },
+    paint: { "icon-opacity": fade(0.95, 0) },
   });
 
   for (const region of REGIONS) {
@@ -576,3 +636,147 @@ if (DONATION_URL) {
   // never appears without something to click.
   document.getElementById("gate-support").hidden = false;
 }
+
+/* ── place search ─────────────────────────────────────────────────────────
+ * "Which street am I on?" is the first question this map gets asked, so the
+ * box sits in the title panel above every layer control.
+ *
+ * Photon rather than Nominatim: it sends Access-Control-Allow-Origin (checked
+ * — Nominatim did not), it is built for as-you-type queries, and its operators
+ * ask for autocomplete traffic rather than forbidding it. Results are biased
+ * to the current view and clipped to a Czech bbox, because every archive here
+ * is Czech and a hit in Slovakia would only waste a tap.
+ */
+const CZ_BBOX = "12.09,48.55,18.86,51.06";
+const qEl = document.getElementById("q");
+const qList = document.getElementById("q-results");
+const qNote = document.getElementById("q-note");
+const qClear = document.getElementById("q-clear");
+let qTimer = null;
+let qMarker = null;
+let qSeq = 0; // guards against a slow early request overwriting a newer one
+
+// Loaded once so a picked point can be told "there is no data here yet"
+// instead of flying to a black square.
+let coverage = null;
+fetch("./coverage.geojson").then((r) => r.json()).then((d) => (coverage = d)).catch(() => {});
+
+function inCoverage(lon, lat) {
+  if (!coverage) return true; // unknown — say nothing rather than mislead
+  return coverage.features.some((f) => {
+    if (f.properties.status !== "live") return false;
+    const ring = f.geometry.coordinates[0];
+    let hit = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i], [xj, yj] = ring[j];
+      if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) hit = !hit;
+    }
+    return hit;
+  });
+}
+
+function closeResults() {
+  qList.hidden = true;
+  qList.innerHTML = "";
+  qEl.setAttribute("aria-expanded", "false");
+}
+
+function label(p) {
+  const line1 = [p.name, p.housenumber].filter(Boolean).join(" ");
+  const line2 = [p.street, p.district, p.city, p.state].filter((v) => v && v !== line1);
+  return [line1 || p.street || p.city, [...new Set(line2)].join(", ")];
+}
+
+function pick(lon, lat, title) {
+  closeResults();
+  qEl.value = title;
+  qClear.hidden = false;
+  map.flyTo({ center: [lon, lat], zoom: 16, speed: 1.4 });
+  if (qMarker) qMarker.remove();
+  qMarker = new maplibregl.Marker({ color: "#f0a04b" }).setLngLat([lon, lat]).addTo(map);
+  qNote.textContent = inCoverage(lon, lat) ? "" : t("searchOutside");
+  qNote.hidden = !qNote.textContent;
+}
+
+async function search(text) {
+  const seq = ++qSeq;
+  const c = map.getCenter();
+  const url =
+    `https://photon.komoot.io/api/?q=${encodeURIComponent(text)}` +
+    `&limit=12&bbox=${CZ_BBOX}&lat=${c.lat.toFixed(3)}&lon=${c.lng.toFixed(3)}`;
+  let feats = [];
+  try {
+    const r = await fetch(url);
+    if (r.ok) feats = (await r.json()).features || [];
+  } catch {
+    /* offline or the service is down — fall through to "nothing found" */
+  }
+  if (seq !== qSeq) return; // a newer keystroke already won
+
+  // Photon returns one hit per OSM node, so a long street arrives three or
+  // four times over. Collapse by rendered label — the user cannot tell those
+  // apart anyway, and a list of identical rows reads as a broken search.
+  const seen = new Set();
+  feats = feats.filter((f) => {
+    const key = label(f.properties).join("|");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  qList.innerHTML = "";
+  if (!feats.length) {
+    const li = document.createElement("li");
+    li.className = "hit-sub";
+    li.style.padding = "6px 8px";
+    li.textContent = t("searchNoResults");
+    qList.append(li);
+  }
+  for (const f of feats.slice(0, 6)) {
+    const [lon, lat] = f.geometry.coordinates;
+    const [main, sub] = label(f.properties);
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = main || "";
+    if (sub) {
+      const s = document.createElement("span");
+      s.className = "hit-sub";
+      s.textContent = sub;
+      b.append(s);
+    }
+    b.addEventListener("click", () => pick(lon, lat, main || sub));
+    li.append(b);
+    qList.append(li);
+  }
+  qList.hidden = false;
+  qEl.setAttribute("aria-expanded", "true");
+}
+
+qEl.addEventListener("input", () => {
+  qNote.hidden = true;
+  qClear.hidden = !qEl.value;
+  clearTimeout(qTimer);
+  const text = qEl.value.trim();
+  if (text.length < 3) return closeResults();
+  qTimer = setTimeout(() => search(text), 250); // one request per pause, not per key
+});
+
+qEl.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { closeResults(); qEl.blur(); }
+  if (e.key === "ArrowDown") { e.preventDefault(); qList.querySelector("button")?.focus(); }
+  if (e.key === "Enter") { e.preventDefault(); qList.querySelector("button")?.click(); }
+});
+
+qClear.addEventListener("click", () => {
+  qEl.value = "";
+  qClear.hidden = true;
+  qNote.hidden = true;
+  closeResults();
+  if (qMarker) { qMarker.remove(); qMarker = null; }
+  qEl.focus();
+});
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".search")) closeResults();
+});
