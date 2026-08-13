@@ -27,17 +27,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check the tile origin is configured
+      - name: Check the tiles will actually be reachable
         run: |
-          # Archives are served from S3, so nothing here checks file sizes: the
-          # 100 MB per-file ceiling was GitHub's, and it no longer applies.
-          # What can break instead is shipping the local-dev default to
-          # production, where web/ holds no .pmtiles and every region fails soft
-          # to an empty map.
+          # The invariant is not "TILE_BASE must be set" — it is "the archives
+          # must be somewhere". Either they ship in the repo and TILE_BASE is
+          # empty, or TILE_BASE points at a CDN and the repo carries none. An
+          # earlier version of this check asserted only the second arrangement
+          # and failed the first deploy after the archives moved back in.
           if grep -q 'window.TILE_BASE = ""' web/index.html; then
-            echo "::error::TILE_BASE is still the local-dev default in web/index.html."
-            echo "Set it to the bucket or CDN origin (trailing slash) before deploying."
-            exit 1
+            n=$(ls web/*.pmtiles 2>/dev/null | wc -l)
+            if [ "$n" -eq 0 ]; then
+              echo "::error::TILE_BASE is empty and web/ holds no .pmtiles — the map would be blank."
+              exit 1
+            fi
+            echo "serving $n archives from the repo"
+            for f in web/*.pmtiles; do
+              mb=$(( $(stat -c%s "$f") / 1048576 ))
+              echo "  $(basename "$f"): ${mb} MB"
+              if [ "$mb" -gt 100 ]; then
+                echo "::error::$f is ${mb} MB — over GitHub's 100 MB per-file limit."
+                exit 1
+              fi
+            done
+          else
+            echo "TILE_BASE points off-repo; archives are not expected here"
           fi
 
       - name: Version the assets against the browser cache
