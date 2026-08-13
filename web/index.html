@@ -149,13 +149,10 @@
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
-<!-- Where the .pmtiles archives live. Not in the repo: a region pair is ~90 MB
-     and 71 regions is ~6 GB. Served through CloudFront rather than straight from
-     S3 — same per-GB rate, but a 1 TB/month free tier instead of 100 GB, and the
-     edge caches a whole archive on first touch so later byte ranges never reach
-     the origin (verified: a second, different range returns x-cache: Hit).
-     Trailing slash required. Leave empty for local dev via web/serve.py. -->
-<script>window.TILE_BASE = "https://d20dgz2znvrjzl.cloudfront.net/tiles/";</script>
+<!-- Archives now ship inside the repo and are served by Pages itself, so this
+     is empty. It carried the CloudFront origin while the site was live; the
+     history is in git if it ever needs to point at a CDN again. -->
+<script>window.TILE_BASE = "";</script>
 <script src="./app.js"></script>
 </body>
 </html>

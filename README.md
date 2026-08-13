@@ -12,7 +12,47 @@ see it at all comes down to which street you are standing on.
 The eclipse is only a time window in `config.yaml`. Point it at any sunrise or
 sunset and the pipeline answers the same question for that moment.
 
+**Live map: [solarme.cz](https://solarme.cz)** — 17 contiguous regions around
+Prague, Mělník and the Krkonoše, served straight from this repo.
+
+> On the day itself the site ran **99 regions covering every Czech town above
+> ~12,000 people**, computed in five waves on EC2 spot for about $60 and served
+> from S3 behind CloudFront. That infrastructure has since been retired. What
+> remains here is a self-contained subset that needs no infrastructure at all —
+> the dashed outlines on the map are the regions that were computed and are no
+> longer hosted.
+
 ![Prague eclipse visibility](docs/preview.png)
+
+---
+
+## What it looks like
+
+Same place, same framing, two layers — open farmland at the Vltava–Labe
+confluence north of Prague:
+
+| Whole window (19:20–20:16) | At maximum (20:11:45) |
+|---|---|
+| ![](docs/screenshots/en-3-melnik-whole-window.jpg) | ![](docs/screenshots/en-4-melnik-at-maximum.jpg) |
+
+Most open ground sees the sun for much of the window. By maximum the shadows
+have swung and lengthened and only **59%** of it still does — in central Prague,
+**0.1%**.
+
+| Satellite basemap — the cause is visible | Krkonoše in 3D, 68° pitch |
+|---|---|
+| ![](docs/screenshots/en-6-melnik-satellite.jpg) | ![](docs/screenshots/en-7-krkonose-3d.jpg) |
+
+Dropping the layer opacity over aerial imagery shows *what* is doing the
+blocking — every tree line and farmyard casts a kilometre-long shadow. Draped
+over terrain, the same low sun rakes across the mountains: valleys dark,
+west-facing slopes lit.
+
+| Coverage on the day | Dense city, street level |
+|---|---|
+| ![](docs/screenshots/en-2-coverage.jpg) | ![](docs/screenshots/en-5-prague-detail.jpg) |
+
+Czech-language versions of all seven are in [`docs/screenshots/`](docs/screenshots/).
 
 ---
 
@@ -300,12 +340,34 @@ rotation would need.
 
 ## Deploying
 
-`web/` is entirely static — HTML, JS, and one PMTiles archive read over HTTP
-range requests. GitHub Pages supports those (verified: `206 Partial Content`),
-so no tile server, backend or database is involved.
+`web/` is entirely static — HTML, JS, and PMTiles archives read over HTTP range
+requests. GitHub Pages supports those (verified: `206 Partial Content`), so no
+tile server, backend or database is involved. That property is what made the
+whole thing survivable: there was never a process to fall over under load.
 
-`.github/workflows/pages.yml` publishes `web/` and fails loudly if the archive
-is missing or breaches GitHub's 100 MB per-file limit.
+`.github/workflows/pages.yml` publishes `web/` and stamps the commit sha onto
+`app.js`, `style.css` and the coverage fetch. That versioning is not cosmetic —
+Pages serves everything with `max-age=600`, and those two files carry the region
+list, so a cached copy would silently hide newly published regions from a
+returning visitor.
+
+### Scaling past a repo, and back again
+
+For the day itself the archives moved to S3 behind CloudFront and `TILE_BASE` in
+`index.html` pointed at the CDN. Two details mattered:
+
+- **CORS is set at the edge as `Allow-Origin: *`**, not forwarded from S3. S3
+  echoes the *requesting* origin, so one cached response carrying `solarme.cz`
+  would be served to a `github.io` visitor and fail.
+- **CloudFront caches the whole archive on first touch** and answers later byte
+  ranges from the edge — verified by requesting one range, then a different one,
+  and seeing `x-cache: Hit`. Origin traffic collapses to almost nothing, and the
+  1 TB/month free tier covers roughly 200,000 map sessions against S3's 100 GB.
+
+`scripts/archive_to_pages.py` reverses it: it grows a contiguous region set
+outward from two seeds until a size budget is hit, copies those archives into
+`web/`, and rewrites both `REGIONS` and `coverage.geojson` so the map cannot
+claim coverage it no longer has.
 
 **Zoom is capped at z15 (~3 m/px), not z16.** `publish` builds the deepest zoom
 first, measures, and steps back one level if the archive would breach the size
