@@ -172,7 +172,11 @@ const DONATION_URL = "https://ko-fi.com/ruderalista"; // same Ko-fi as the alley
 
 /* ── basemaps ────────────────────────────────────────────────────────────
  * Two keyless options, both free:
- *   dark      — CARTO, quiet enough that the magma ramp carries the page
+ *   dark      — Esri Dark Gray Canvas, quiet enough that the magma ramp
+ *               carries the page. This was CARTO until CARTO began requiring a
+ *               key: its tile server still answers 200, but with a grey
+ *               "API KEY REQUIRED" image, so nothing errors — the map just
+ *               fills with watermarks.
  *   satellite — Esri World Imagery, for checking the model against what is
  *               actually on the ground (a courtyard, a tree line, a new block
  *               the 2009-2013 lidar never saw)
@@ -197,19 +201,21 @@ const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services";
 const style = {
   version: 8,
   sources: {
+    // The canvas stops at z16 — past it Esri serves a "Map data not yet
+    // available" tile, again with a 200. maxzoom 16 makes MapLibre overzoom.
     "base-dark": {
       type: "raster",
-      tiles: ["https://basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}@2x.png"],
+      tiles: [`${ESRI}/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`],
       tileSize: 256,
-      maxzoom: 19,
+      maxzoom: 16,
       attribution:
-        '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+        'Basemap © Esri, HERE, Garmin, © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     },
     "labels-dark": {
       type: "raster",
-      tiles: ["https://basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}@2x.png"],
+      tiles: [`${ESRI}/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}`],
       tileSize: 256,
-      maxzoom: 19,
+      maxzoom: 16,
     },
     "base-sat": {
       type: "raster",

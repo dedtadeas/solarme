@@ -385,7 +385,7 @@ instantly in production.
 
 Elevation data: **Podkladová data © ČÚZK, CC BY 4.0**. This attribution is
 required wherever the map is displayed and is built into the page footer.
-Basemap © OpenStreetMap contributors © CARTO.
+Basemap © Esri, HERE, Garmin, © OpenStreetMap contributors.
 
 ## Licence
 
