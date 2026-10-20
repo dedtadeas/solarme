@@ -265,6 +265,42 @@ html, body {
 }
 .hint .ghost:hover { color: var(--ink); }
 
+/* ── "no data here" note ── */
+.area-note {
+  position: absolute;
+  z-index: 3;
+  top: 14px;
+  /* Centred in the map to the right of the left column, clear of the zoom
+     controls, so it never sits on the title panel at mid widths. */
+  left: calc(var(--panel-w) + 28px);
+  right: 56px;
+  margin: 0 auto;
+  max-width: 460px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px 10px 15px;
+  background: var(--panel);
+  border: 1px solid rgba(240, 160, 75, 0.35);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  font-size: 12.5px;
+}
+.area-note[hidden] { display: none; }
+.area-note p { margin: 0; flex: 1; }
+.area-note button {
+  flex: none;
+  border-radius: 6px;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: var(--warm);
+  color: #1a1108;
+}
+
 /* ── footer ── */
 .panel--foot {
   bottom: 14px; left: 14px;
@@ -439,6 +475,12 @@ html, body {
   #legend-toggle { display: inline-flex; align-items: center; justify-content: center; }
 
   .hint { bottom: auto; top: 50%; transform: translate(-50%, -50%); }
+
+  /* The title panel fills the top edge, so the note sits just above the
+     collapsed legend instead — and steps aside while the legend is open,
+     since an open legend would cover it anyway. */
+  .area-note { top: auto; bottom: 160px; left: 14px; right: 14px; max-width: none; }
+  .panel--legend:not(.collapsed) ~ .area-note { display: none; }
 
   /* Every edge is spoken for by a panel that carries more than a scale bar
      does, and at bottom-left it lands under the footer. The basemap's own

@@ -34,6 +34,7 @@ const REGIONS = [
   { id: "west", url: "west.pmtiles", maxUrl: "west_max.pmtiles" },
 ].map((r) => ({ ...r, url: TILE_BASE + r.url, maxUrl: TILE_BASE + r.maxUrl }));
 let activeLayer = "fraction"; // "fraction" | "max"
+const maxIds = new Set(); // regions whose at-maximum archive is actually hosted
 
 /* ── i18n ─────────────────────────────────────────────────────────────────
  * Czech first — the map is of Czech streets for a Czech sky. EN kept for the
@@ -69,6 +70,10 @@ const I18N = {
     searchPlaceholder: "Najít adresu nebo místo…",
     searchNoResults: "Nic jsme nenašli. Zkuste jiný zápis.",
     searchOutside: "Tady zatím analýza spočítaná není — vyberte místo v některém z rámečků.",
+    areaArchived: "Tato oblast byla spočítaná, ale kvůli úspoře místa už tu není. Oddalte mapu a přesuňte se do plného rámečku.",
+    areaNone: "Tady analýza spočítaná není. Oddalte mapu a přesuňte se do plného rámečku.",
+    areaGo: "Ukázat pokryté oblasti",
+    maxMissing: "Vrstva „V maximu“ je kvůli úspoře místa jen pro: {names}. Tady použijte „Celé okno“.",
     fineprint: "Hobby projekt bez záruky. Autor neručí za přesnost dat ani za rozhodnutí učiněná podle nich. Mapa nenahrazuje pohled na místo.",
     reportLink: "Našli jste chybu?",
     report: "Nahlásit chybu",
@@ -113,6 +118,10 @@ const I18N = {
     searchPlaceholder: "Find an address or place…",
     searchNoResults: "Nothing found. Try a different spelling.",
     searchOutside: "No analysis here yet — pick a place inside one of the outlined areas.",
+    areaArchived: "This area was computed, but it is no longer hosted, to save space. Zoom out and move into a solid outline.",
+    areaNone: "No analysis here. Zoom out and move into a solid outline.",
+    areaGo: "Show covered areas",
+    maxMissing: "“At maximum” is kept only for {names}, to save space. Here, use “Whole window”.",
     fineprint: "A hobby project, provided without warranty. The author accepts no liability for the accuracy of the data or for decisions based on it. It does not replace looking at the place itself.",
     reportLink: "Found a mistake?",
     report: "Report a mistake",
@@ -387,6 +396,7 @@ map.on("load", async () => {
   // before adding: a source whose archive 404s spams tile errors, and a toggle
   // to an empty layer reads as a broken map rather than a missing build.
   let anyMax = false;
+  maxIds.clear();
   for (const region of REGIONS) {
     try {
       const head = await fetch(region.maxUrl, { headers: { Range: "bytes=0-13" } });
@@ -404,6 +414,7 @@ map.on("load", async () => {
         paint: { "raster-opacity": 0.9, "raster-resampling": "nearest" },
       });
       anyMax = true;
+      maxIds.add(region.id);
     } catch {
       /* archive not built yet — toggle stays disabled */
     }
@@ -414,6 +425,7 @@ map.on("load", async () => {
     maxBtn.title = "Not built yet — run `make publish-max`";
     maxBtn.style.opacity = "0.4";
   }
+  updateAreaNote(); // the max probe is async; a switch made meanwhile was judged without it
 
   // Labels sit above the overlay so the map stays navigable.
   map.addLayer({ id: "labels-dark", type: "raster", source: "labels-dark" });
@@ -517,6 +529,7 @@ function setLayer(name) {
   document.querySelectorAll("[data-layer]").forEach((b) => {
     b.classList.toggle("on", b.dataset.layer === name);
   });
+  updateAreaNote();
 }
 document.querySelectorAll("[data-layer]").forEach((b) => {
   b.addEventListener("click", () => !b.disabled && setLayer(b.dataset.layer));
@@ -685,21 +698,80 @@ let qSeq = 0; // guards against a slow early request overwriting a newer one
 // Loaded once so a picked point can be told "there is no data here yet"
 // instead of flying to a black square.
 let coverage = null;
-fetch("./coverage.geojson").then((r) => r.json()).then((d) => (coverage = d)).catch(() => {});
+fetch("./coverage.geojson")
+  .then((r) => r.json())
+  .then((d) => { coverage = d; updateAreaNote(); })
+  .catch(() => {});
+
+function inRing(ring, lon, lat) {
+  let hit = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) hit = !hit;
+  }
+  return hit;
+}
+
+// The footprint under a point, live preferred: neighbouring outlines share
+// edges, and a point on a shared edge should count as covered.
+function regionAt(lon, lat) {
+  const hits = coverage.features.filter((f) => inRing(f.geometry.coordinates[0], lon, lat));
+  return hits.find((f) => f.properties.status === "live") || hits[0] || null;
+}
 
 function inCoverage(lon, lat) {
   if (!coverage) return true; // unknown — say nothing rather than mislead
-  return coverage.features.some((f) => {
-    if (f.properties.status !== "live") return false;
-    const ring = f.geometry.coordinates[0];
-    let hit = false;
-    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-      const [xi, yi] = ring[i], [xj, yj] = ring[j];
-      if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) hit = !hit;
-    }
-    return hit;
-  });
+  return regionAt(lon, lat)?.properties.status === "live";
 }
+
+/* ── "no data here" note ──
+ * The outlines fade out at z12.5, where the rasters take over — so once
+ * zoomed into a region that was dropped to fit the Pages budget, or into
+ * "At maximum" where only two regions kept that layer, a visitor sees bare
+ * basemap and nothing saying why. Judged at the map centre, the spot the
+ * visitor is looking at; below z11 the outlines still explain themselves.
+ */
+const areaNote = document.getElementById("area-note");
+const areaNoteText = document.getElementById("area-note-text");
+const areaNoteBtn = document.getElementById("area-note-btn");
+let areaAction = null;
+
+function updateAreaNote() {
+  let text = "", btn = "";
+  if (coverage && map.getZoom() >= 11) {
+    const c = map.getCenter();
+    const f = regionAt(c.lng, c.lat);
+    if (f?.properties.status !== "live") {
+      text = t(f ? "areaArchived" : "areaNone");
+      btn = t("areaGo");
+      areaAction = showCovered;
+    } else if (activeLayer === "max" && maxIds.size && !maxIds.has(f.properties.slug)) {
+      const names = coverage.features
+        .filter((g) => maxIds.has(g.properties.slug))
+        .map((g) => g.properties.name);
+      text = t("maxMissing").replace("{names}", new Intl.ListFormat(LANG).format(names));
+      btn = t("layerFraction");
+      areaAction = () => setLayer("fraction");
+    }
+  }
+  areaNoteText.textContent = text;
+  areaNoteBtn.textContent = btn;
+  areaNote.hidden = !text;
+}
+
+function showCovered() {
+  const b = new maplibregl.LngLatBounds();
+  for (const f of coverage.features) {
+    if (f.properties.status === "live") f.geometry.coordinates[0].forEach((p) => b.extend(p));
+  }
+  map.fitBounds(b, { padding: 60, speed: 1.4 });
+}
+
+areaNoteBtn.addEventListener("click", () => areaAction?.());
+map.on("moveend", updateAreaNote);
+// applyLang runs at startup, before this block exists, so the note listens
+// for language switches itself rather than being called from there.
+document.querySelectorAll("[data-lang]").forEach((b) => b.addEventListener("click", updateAreaNote));
 
 function closeResults() {
   qList.hidden = true;
