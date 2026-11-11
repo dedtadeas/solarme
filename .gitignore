@@ -11,6 +11,10 @@ configs/data_*/
 # Pages site, so the map stays interactive without any infrastructure. Every
 # file is under GitHub's 100 MB per-file limit — the Pages workflow checks.
 
+# Generated from web/index.html by scripts/build_en_page.py (the Pages
+# workflow and `make serve` both run it), so the Czech page stays the source.
+web/en/
+
 # JPL ephemeris kernel, ~16 MB, fetched on demand into data/.
 de421.bsp
 

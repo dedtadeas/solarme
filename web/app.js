@@ -141,7 +141,16 @@ const I18N = {
 };
 
 const LANG_KEY = "sunline.lang";
-let LANG = (() => {
+// A language in the URL — the /en/ page, or ?lang=en|cs — wins over the stored
+// preference, so a shared link opens in the language it was shared in. Only a
+// click on the switch is remembered; opening /en/ once must not turn the
+// Czech home page English for that visitor from then on.
+const URL_LANG = (() => {
+  const q = new URLSearchParams(location.search).get("lang");
+  if (q === "en" || q === "cs") return q;
+  return /^\/en(\/|$)/.test(location.pathname) ? "en" : null;
+})();
+let LANG = URL_LANG || (() => {
   try { return localStorage.getItem(LANG_KEY) === "en" ? "en" : "cs"; }
   catch { return "cs"; }
 })();
@@ -150,9 +159,20 @@ function t(key) {
   return I18N[LANG][key] ?? I18N.en[key] ?? key;
 }
 
-function applyLang(lang) {
+function applyLang(lang, remember = true) {
   LANG = lang;
-  try { localStorage.setItem(LANG_KEY, lang); } catch { /* private mode */ }
+  if (remember) {
+    try { localStorage.setItem(LANG_KEY, lang); } catch { /* private mode */ }
+    // Keep the address bar shareable: switching language moves between / and
+    // /en/. Only on those two pages — any other path (a local file, a preview
+    // deploy under a subpath) is left alone.
+    if (/^\/(en\/?)?(index\.html)?$/.test(location.pathname)) {
+      const q = new URLSearchParams(location.search);
+      q.delete("lang");
+      const qs = q.toString();
+      history.replaceState(null, "", (lang === "en" ? "/en/" : "/") + (qs ? `?${qs}` : "") + location.hash);
+    }
+  }
   document.documentElement.lang = lang;
   document.title = t("htmlTitle");
   document.querySelectorAll("[data-i18n]").forEach((el) => {
@@ -639,7 +659,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 /* ── first paint of all strings (guide element refs exist by now) ── */
-applyLang(LANG);
+applyLang(LANG, false);
 
 /* ── donation link — hidden until a URL is set, as in the alley kit ── */
 /* ── legend collapse, phones only ─────────────────────────────────────────

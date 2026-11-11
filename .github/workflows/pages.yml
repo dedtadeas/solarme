@@ -53,6 +53,9 @@ jobs:
             echo "TILE_BASE points off-repo; archives are not expected here"
           fi
 
+      - name: Build the English entry point (solarme.cz/en/)
+        run: python3 scripts/build_en_page.py
+
       - name: Version the assets against the browser cache
         run: |
           # Pages serves everything with max-age=600, so a returning visitor can
@@ -61,7 +64,7 @@ jobs:
           # HTML expires on its own within 10 minutes; versioning what it points
           # at means the moment it does, every asset is fetched fresh.
           V=${GITHUB_SHA::7}
-          sed -i "s|\./app\.js|./app.js?v=$V|g; s|\./style\.css|./style.css?v=$V|g" web/index.html
+          sed -i "s|\./app\.js|./app.js?v=$V|g; s|\./style\.css|./style.css?v=$V|g" web/index.html web/en/index.html
           sed -i "s|\"\./coverage\.geojson\"|\"./coverage.geojson?v=$V\"|g" web/app.js
           echo "assets versioned as v=$V"
           grep -o 'app\.js?v=[a-f0-9]*' web/index.html || true

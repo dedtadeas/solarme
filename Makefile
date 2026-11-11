@@ -51,6 +51,7 @@ demo: test fetch composite publish
 # NOT `python -m http.server`: that answers 200 with the whole body, and
 # PMTiles is built on range requests. web/serve.py speaks 206.
 serve:
+	@python3 scripts/build_en_page.py
 	@python3 web/serve.py 8000
 
 clean:
